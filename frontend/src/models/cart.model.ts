@@ -1,4 +1,4 @@
-import { IProduct } from './product.model';
+import type { IProduct } from './product.model';
 
 export interface CartItem {
   product: IProduct;
@@ -20,8 +20,8 @@ export class Cart {
     const productExists = this.items.some(item => item.product.id === product.id);
 
     if (productExists) {
-      this.items = this.items.map(item => 
-        item.product.id === product.id 
+      this.items = this.items.map(item =>
+        item.product.id === product.id
           ? { ...item, quantity: item.quantity + quantity }
           : item
       );

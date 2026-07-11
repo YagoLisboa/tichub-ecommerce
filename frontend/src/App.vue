@@ -1,43 +1,66 @@
 <template>
-  <div id="app-container">
-    <h1>🛒 TechHub E-commerce</h1>
+  <div class="min-h-screen bg-slate-50 p-4 md:p-8 max-w-7xl mx-auto">
+    <header class="mb-8 flex items-center justify-between border-b border-slate-200 pb-4">
+      <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+        <span>🛒</span> TechHub Hub-Commerce
+      </h1>
+    </header>
 
-    <!-- Vitrine de Produtos -->
-    <section class="showcase">
-      <h2>Produtos Disponíveis</h2>
-      <div class="product-grid">
-        <ProductCard
-          v-for="product in products"
-          :key="product.id"
-          :product="product"
-          @add-to-cart="handleAddToCart"
-        />
-      </div>
-    </section>
+    <!-- Layout em Grid Principal: Vitrine à Esquerda, Resumo à Direita -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-    <!-- Resumo e Listagem do Carrinho -->
-    <section class="cart-summary">
-      <h2>Resumo do Carrinho</h2>
-
-      <div v-if="cartItems.length === 0" class="empty-message">
-        O seu carrinho está vazio.
-      </div>
-
-      <div v-else>
-        <!-- Listagem Detalhada (Desafio) -->
-        <ul class="cart-list">
-          <li v-for="item in cartItems" :key="item.product.id">
-            <span>{{ item.product.name }} x {{ item.quantity }}</span>
-            <span class="subtotal">R$ {{ (item.product.price * item.quantity).toFixed(2) }}</span>
-          </li>
-        </ul>
-
-        <div class="totals">
-          <p><strong>Total de itens:</strong> {{ totalItems }} unidades</p>
-          <p><strong>Preço Final:</strong> R$ {{ finalPrice.toFixed(2) }}</p>
+      <!-- Vitrine de Produtos (Ocupa 3 colunas em telas grandes) -->
+      <main class="lg:col-span-3">
+        <h2 class="text-xl font-bold text-slate-800 mb-4">Produtos em Destaque</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <ProductCard
+            v-for="product in products"
+            :key="product.id"
+            :product="product"
+            @add-to-cart="handleAddToCart"
+          />
         </div>
-      </div>
-    </section>
+      </main>
+
+      <!-- Resumo do Carrinho (Ocupa 1 coluna) -->
+      <aside class="lg:col-span-1 bg-white p-6 rounded-xl shadow-md border border-slate-100 self-start">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Meu Carrinho</h2>
+
+        <!-- Estado Vazio (Desafio Empty State) -->
+        <div v-if="cartItems.length === 0" class="text-center py-8 text-slate-400">
+          <p class="text-4xl mb-2">📥</p>
+          <p class="text-sm">Seu carrinho está vazio.</p>
+        </div>
+
+        <div v-else>
+          <!-- Listagem Detalhada do Carrinho -->
+          <ul class="divide-y divide-slate-100 mb-6">
+            <li v-for="item in cartItems" :key="item.product.id" class="py-3 flex flex-col gap-1">
+              <div class="flex justify-between text-sm font-medium text-slate-700">
+                <span>{{ item.product.name }}</span>
+                <span>R$ {{ (item.product.price * item.quantity).toFixed(2) }}</span>
+              </div>
+              <div class="text-xs text-slate-400">
+                Qtd: <span class="font-bold text-slate-600">{{ item.quantity }}</span>
+              </div>
+            </li>
+          </ul>
+
+          <!-- Totais Dinâmicos -->
+          <div class="bg-slate-50 p-4 rounded-lg space-y-2 border border-slate-100">
+            <div class="flex justify-between text-sm text-slate-500">
+              <span>Total de itens:</span>
+              <span class="font-semibold text-slate-700">{{ totalItems }} un.</span>
+            </div>
+            <div class="flex justify-between text-base font-bold text-slate-800 pt-2 border-t border-slate-200">
+              <span>Preço Final:</span>
+              <span class="text-emerald-600">R$ {{ finalPrice.toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
   </div>
 </template>
 
@@ -45,24 +68,19 @@
 import { defineComponent } from 'vue';
 import ProductCard from './components/ProductCard.vue';
 import { Cart, type CartItem } from './models/cart.model';
-import { Product } from './models/product.model';
 
 export default defineComponent({
   name: 'App',
   components: { ProductCard },
   data() {
     return {
-      // Instanciando a Model Rica (Arquitetura Pro)
       cartInstance: new Cart(),
-      // Array auxiliar para forçar a reatividade fina do Vue 3 ao modificar objetos internos de classes
       cartItems: [] as CartItem[],
-
-      // Dados Fictícios Rigorosamente Tipados
       products: [
         { id: '1', name: 'Teclado Mecânico RGB', price: 349.90, category: { id: 'c1', title: 'Periféricos' } },
         { id: '2', name: 'Mouse Gamer 16000 DPI', price: 219.00, category: { id: 'c1', title: 'Periféricos' } },
         { id: '3', name: 'Monitor 144Hz 1ms', price: 1299.00, category: { id: 'c2', title: 'Monitores' } }
-      ] as any[] // Convertido estruturalmente para coincidir com o contrato exigido pelo card
+      ]
     };
   },
   computed: {
@@ -75,53 +93,14 @@ export default defineComponent({
   },
   methods: {
     handleAddToCart(product: any): void {
-      // Executa a regra de acúmulo de quantidades encapsulada na classe da Atividade 1
       this.cartInstance.addItem({
         id: product.id,
         name: product.name,
         price: product.price,
         category: { id: product.category.id, title: product.category.title }
       }, 1);
-
-      // Sincroniza a referência para disparar a reatividade do Options API perfeitamente
       this.cartItems = this.cartInstance.getItems();
     }
   }
 });
 </script>
-
-<style>
-#app-container {
-  font-family: Arial, sans-serif;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
-}
-.cart-summary {
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e3e3e3;
-}
-.cart-list {
-  list-style: none;
-  padding: 0;
-}
-.cart-list li {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-}
-.totals {
-  margin-top: 20px;
-  font-size: 1.1em;
-  text-align: right;
-}
-</style>
