@@ -1,47 +1,67 @@
-import { Request, Response } from 'express';
-import { createCategorySchema, categoryParamsSchema, categoryQueryPaginationSchema } from '../schemas/category.schema';
+import { Request, Response, NextFunction } from 'express';
+import { CategoryService } from '../services/category.service';
+import { categoryQueryPaginationSchema, createCategorySchema, categoryParamsSchema } from '../schemas/category.schema';
 
 export class CategoryController {
-  
-  static async getAll(req: Request, res: Response): Promise<void> {
-    // Paginação Segura validada pelo Zod
-    const queryParsed = categoryQueryPaginationSchema.safeParse(req.query);
-    if (!queryParsed.success) {
-      res.status(400).json({ errors: queryParsed.error.format() });
-      return;
+  // Injeção via construtor
+  constructor(private categoryService: CategoryService) {}
+
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { page, size } = categoryQueryPaginationSchema.parse(req.query);
+      const categories = await this.categoryService.getAll(page, size);
+      res.json(categories);
+    } catch (error) {
+      next(error);
     }
-    
-    const { page, size } = queryParsed.data;
-    res.status(200).json({
-      message: "Categorias listadas com sucesso (Simulado)",
-      page,
-      size,
-      data: []
-    });
-  }
+  };
 
-  static async create(req: Request, res: Response): Promise<void> {
-    const bodyParsed = createCategorySchema.safeParse(req.body);
-    
-    // Se o cliente enviar um nome com apenas 2 letras, o Zod barra aqui!
-    if (!bodyParsed.success) {
-      res.status(400).json({ errors: bodyParsed.error.flatten().fieldErrors });
-      return;
+  create = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { name } = createCategorySchema.parse(req.body);
+      const category = await this.categoryService.create(name);
+      res.status(201).json(category);
+    } catch (error) {
+      next(error);
     }
+  };
 
-    res.status(201).json({
-      message: "Categoria criada com sucesso!",
-      data: { id: crypto.randomUUID(), ...bodyParsed.data }
-    });
-  }
+  // ------------------------------------------------------------------------
+  // NOVOS MÉTODOS IMPLEMENTADOS ABAIXO
+  // ------------------------------------------------------------------------
 
-  static async delete(req: Request, res: Response): Promise<void> {
-    const paramsParsed = categoryParamsSchema.safeParse(req.params);
-    if (!paramsParsed.success) {
-      res.status(400).json({ errors: paramsParsed.error.flatten().fieldErrors });
-      return;
+  update = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // 1. Valida se o ID passado na URL é um UUID válido
+      const { id } = categoryParamsSchema.parse(req.params);
+      
+      // 2. Valida se o corpo da requisição contém os dados corretos (novo nome)
+      // Reaproveitamos o createCategorySchema, pois a regra de validação do nome é a mesma
+      const { name } = createCategorySchema.parse(req.body);
+      
+      // 3. Orquestra a chamada ao Service
+      const updatedCategory = await this.categoryService.update(id, name);
+      
+      // 4. Retorna a entidade atualizada com status 200 (OK)
+      res.status(200).json(updatedCategory);
+    } catch (error) {
+      // Qualquer erro do Zod ou do Service (como "NOT_FOUND") cai aqui e vai para o Middleware Global
+      next(error);
     }
+  };
 
-    res.status(204).send();
-  }
+  delete = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // 1. Valida se o ID passado na URL é autêntico antes de bater no banco
+      const { id } = categoryParamsSchema.parse(req.params);
+      
+      // 2. Chama o Service para exclusão (lançará erro se não existir)
+      await this.categoryService.delete(id);
+      
+      // 3. Retorna 204 No Content, a resposta HTTP semanticamente correta para exclusões
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
 }
