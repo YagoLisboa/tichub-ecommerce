@@ -30,6 +30,31 @@ export class Cart {
     }
   }
 
+  // Aumenta a quantidade de um item existente
+  increaseItem(productId: string): void {
+    const item = this.items.find(i => i.product.id === productId);
+    if (item) {
+      item.quantity += 1;
+    }
+  }
+
+  // Diminui a quantidade. Se chegar a zero, remove o item.
+  decreaseItem(productId: string): void {
+    const item = this.items.find(i => i.product.id === productId);
+    if (item) {
+      if (item.quantity > 1) {
+        item.quantity -= 1;
+      } else {
+        this.removeItem(productId);
+      }
+    }
+  }
+
+  // Remove o item completamente do carrinho
+  removeItem(productId: string): void {
+    this.items = this.items.filter(item => item.product.id !== productId);
+  }
+
   // Desafio 2: Retorna a quantidade total de unidades usando .reduce()
   get totalItems(): number {
     return this.items.reduce((total, item) => total + item.quantity, 0);

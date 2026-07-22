@@ -40,6 +40,17 @@
             <div class="text-xs text-slate-400">
               Qtd: <span class="font-bold text-slate-600">{{ item.quantity }}</span>
             </div>
+            <!-- Controles de Quantidade -->
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center border border-slate-200 rounded bg-slate-50">
+                <button @click="decreaseQuantity(item.product.id)" class="px-2 py-1 text-slate-500 hover:bg-slate-200 transition-colors">-</button>
+                <span class="px-3 text-xs font-bold text-slate-700">{{ item.quantity }}</span>
+                <button @click="increaseQuantity(item.product.id)" class="px-2 py-1 text-slate-500 hover:bg-slate-200 transition-colors">+</button>
+              </div>
+              <button @click="removeProduct(item.product.id)" class="text-xs text-red-500 hover:text-red-700 font-medium ml-auto">
+                Remover
+              </button>
+            </div>
           </li>
         </ul>
 
@@ -95,6 +106,19 @@ export default defineComponent({
         price: product.price,
         category: { id: product.category.id, title: product.category.title }
       }, 1);
+      this.cartItems = this.cartInstance.getItems();
+    },
+    // Novos métodos de controle
+    increaseQuantity(productId: string): void {
+      this.cartInstance.increaseItem(productId);
+      this.cartItems = this.cartInstance.getItems(); // Força a reatividade
+    },
+    decreaseQuantity(productId: string): void {
+      this.cartInstance.decreaseItem(productId);
+      this.cartItems = this.cartInstance.getItems();
+    },
+    removeProduct(productId: string): void {
+      this.cartInstance.removeItem(productId);
       this.cartItems = this.cartInstance.getItems();
     }
   }
