@@ -54,6 +54,13 @@
         <!-- Listagem Detalhada do Carrinho -->
         <ul class="divide-y divide-slate-100 mb-6">
           <li v-for="item in cartItems" :key="item.product.id" class="py-3 flex flex-col gap-1">
+            <!-- Linha Superior: Miniatura, Título e Preço -->
+            <div class="flex items-center gap-3">
+              <!-- Miniatura da Imagem Real do Produto -->
+              <div class="w-12 h-12 bg-white rounded-md border border-slate-200 flex-shrink-0 flex items-center justify-center p-1 shadow-sm">
+                <img :src="item.product.image" :alt="item.product.name" class="max-h-full max-w-full object-contain" />
+              </div>
+            </div>
             <div class="flex justify-between text-sm font-medium text-slate-700">
               <!-- Link dinâmico levando para a página de detalhes da Atividade 4 -->
               <router-link :to="'/product/' + item.product.id" class="hover:text-emerald-600 underline transition-colors">
@@ -65,7 +72,7 @@
               Qtd: <span class="font-bold text-slate-600">{{ item.quantity }}</span>
             </div>
             <!-- Controles de Quantidade -->
-            <div class="flex items-center gap-3 mt-1">
+            <div class="flex items-center justify-between">
               <div class="flex items-center border border-slate-200 rounded bg-slate-50">
                 <button @click="decreaseQuantity(item.product.id)" class="px-2 py-1 text-slate-500 hover:bg-slate-200 transition-colors">-</button>
                 <span class="px-3 text-xs font-bold text-slate-700">{{ item.quantity }}</span>
@@ -123,7 +130,7 @@ export default defineComponent({
       products: [] as ProductAPI[],
       // Novas variáveis de Paginação
       currentPage: 1,
-      pageSize: 12, // Vamos exibir 6 produtos por vez (2 linhas de 3)
+      pageSize: 9, // Vamos exibir 9 produtos por vez (3 linhas de 3)
       hasMore: true // Controla se o botão "Próxima" deve ficar ativo
     };
   },
@@ -189,6 +196,7 @@ export default defineComponent({
         id: product.id,
         name: product.name,
         price: product.price,
+        image: product.image,
         category: { id: product.category.id, title: product.category.name }
       }, 1);
       this.cartItems = this.cartInstance.getItems();
