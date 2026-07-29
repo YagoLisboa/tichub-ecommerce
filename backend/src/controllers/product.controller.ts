@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
-import { ProductService } from '../services/product.service';
+import { ProductService } from '../services/product.service.js';
 
 import {
   createProductSchema,
   productParamsSchema,
   productQueryPaginationSchema,
   updateProductSchema,
-} from '../schemas/product.schema';
+} from '../schemas/product.schema.js';
 
 export class ProductController {
   constructor(private productService: ProductService) {}
@@ -29,13 +29,30 @@ export class ProductController {
     }
   };
 
+  getProductById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      // Valida se o ID passado na URL é um formato válido (UUID, por exemplo)
+      const { id } = productParamsSchema.parse(req.params);
+
+      const product = await this.productService.getProductById(id);
+
+      res.json(product);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   create = async (
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
     try {
-      const { name, price, stock, categoryId } =
+      const { name, price, stock, categoryId, description, image } =
         createProductSchema.parse(req.body);
 
       const product =
@@ -43,7 +60,9 @@ export class ProductController {
           name,
           price,
           stock,
-          categoryId
+          categoryId,
+          description,
+          image
         );
 
       res.status(201).json(product);
@@ -61,7 +80,7 @@ export class ProductController {
       const { id } =
         productParamsSchema.parse(req.params);
 
-      const { name, price, stock, categoryId } =
+      const { name, price, stock, categoryId, description, image } =
         updateProductSchema.parse(req.body);
 
       const product =
@@ -70,7 +89,9 @@ export class ProductController {
           name,
           price,
           stock,
-          categoryId
+          categoryId,
+          description,
+          image
         );
 
       res.json(product);

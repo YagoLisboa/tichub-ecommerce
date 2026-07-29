@@ -5,13 +5,13 @@ import { Product } from '../entities/product.entity.js';
 
 // Usando a diretiva Sênior para lidar com o conflito de tipos de terceiros
 //// @ts-expect-error - Tipagem do PrismaAdapter conflita temporariamente com o better-sqlite3
-
 const adapter = new PrismaBetterSqlite3({
   url: 'file:./dev.db'
 });
 
 // 3. Inicialização
 const prisma = new PrismaClient({ adapter });
+
 export class ProductRepository {
   
   async createProduct(product: Product) {
@@ -30,20 +30,19 @@ export class ProductRepository {
 
   async getAllProducts(page: number, size: number) {
     const offset = (page - 1) * size;
-    // Retorna os produtos com paginação via LIMIT (take) e OFFSET (skip)
     return await prisma.product.findMany({
       skip: offset,
       take: size,
       include: {
-        category: true // Faz o JOIN automático com a tabela de categorias
+        category: true 
       }
     });
   }
 
-  async getProductById(id: string) {
+  async getProductById(id: string): Promise<Product | null> {
     return await prisma.product.findUnique({
       where: { id },
-      include: { category: true }
+      include: { category: true } // Traz o JOIN com a categoria
     });
   }
 

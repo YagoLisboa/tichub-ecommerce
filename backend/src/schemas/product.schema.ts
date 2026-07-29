@@ -25,9 +25,18 @@ export const createProductSchema = z.object({
     .int()
     .nonnegative('O estoque não pode ser negativo.'),
 
-  categoryId: z.string().uuid({
-    message: 'Categoria inválida.',
-  }),
+  categoryId: z
+    .string().uuid({
+    message: 'Categoria inválida.'
+    }),
+
+  description: z
+    .string()
+    .min(1, "A descrição é obrigatória"),
+
+  image: z
+    .string()
+    .url("A imagem deve ser uma URL válida")
 });
 
 export const updateProductSchema = createProductSchema;

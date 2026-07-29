@@ -1,6 +1,6 @@
-import { ProductRepository } from '../repositories/product.repository';
-import { CategoryRepository } from '../repositories/category.repository';
-import { Product } from '../entities/product.entity';
+import { ProductRepository } from '../repositories/product.repository.js';
+import { CategoryRepository } from '../repositories/category.repository.js';
+import { Product } from '../entities/product.entity.js';
 
 export class ProductService {
   // Injetando as duas dependências diretamente pelo construtor (Padrão Sênior)
@@ -13,13 +13,13 @@ export class ProductService {
     return this.productRepository.getAllProducts(page, size);
   }
 
-  async getById(id: string) {
+  async getProductById(id: string) {
     const product = await this.productRepository.getProductById(id);
     if (!product) throw new Error("NOT_FOUND");
     return product;
   }
 
-  async create(name: string, price: number, stock: number, categoryId: string) {
+  async create(name: string, price: number, stock: number, categoryId: string, description: string, image: string) {
     // 1. Validação cruzada: A categoria fornecida realmente existe no repositório?[cite: 1]
     const categoryExists = await this.categoryRepository.getCategoryById(categoryId);
     
@@ -29,13 +29,13 @@ export class ProductService {
     }
 
     // 2. Construção segura via Factory da Entidade[cite: 1]
-    const newProduct = Product.create(name, price, stock, categoryId);
+    const newProduct = Product.create(name, price, stock, categoryId, description, image);
     
     // 3. Persistência
     return this.productRepository.createProduct(newProduct);
   }
 
-  async update(id: string, name: string, price: number, stock: number, categoryId: string) {
+  async update(id: string, name: string, price: number, stock: number, categoryId: string, description: string, image: string) {
     // 1. Verifica se o produto alvo existe[cite: 1]
     const product = await this.productRepository.getProductById(id);
     if (!product) throw new Error("NOT_FOUND");
@@ -55,6 +55,8 @@ export class ProductService {
     product.price = price;
     product.stock = stock;
     product.categoryId = categoryId;
+    product.description = description;
+    product.image = image;
 
     // 5. Persistência do objeto modificado
     return this.productRepository.updateProduct(product);

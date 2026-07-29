@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { ProductController } from '../controllers/product.controller';
-import { ProductService } from '../services/product.service';
-import { ProductRepository } from '../repositories/product.repository';
-import { CategoryRepository } from '../repositories/category.repository';
+import { ProductController } from '../controllers/product.controller.js';
+import { ProductService } from '../services/product.service.js';
+import { ProductRepository } from '../repositories//product.repository.js';
+import { CategoryRepository } from '../repositories/category.repository.js';
 // Importação obrigatória dos middlewares de segurança para a Atividade 9
-import { authMiddleware, authorize } from '../middlewares/auth.middleware';
+import { authMiddleware, authorize } from '../middlewares/auth.middleware.js';
 
 export const productsRouter = Router();
 
@@ -23,6 +23,7 @@ const adminOnly = [authMiddleware, authorize('admin')];
 
 // 4. Mapeamento das rotas públicas (Sem autenticação)
 productsRouter.get('/', productController.getAll);
+productsRouter.get('/:id', productController.getProductById);
 
 // 5. Mapeamento das rotas protegidas (Exigem token JWT e Role de 'admin')
 productsRouter.post('/', adminOnly, productController.create);
