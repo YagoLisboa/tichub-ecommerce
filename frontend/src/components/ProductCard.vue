@@ -14,9 +14,12 @@
 
     <!-- 2. Slot de Title ajustado para ocupar até 2 linhas caso o nome seja grande -->
     <template #title>
-      <h3 class="text-lg font-bold text-slate-800 line-clamp-2" :title="product.name">
-        {{ product.name }}
-      </h3>
+      <!-- Envolvemos o título em um router-link apontando para /product/:id -->
+      <router-link :to="'/product/' + product.id" class="hover:text-emerald-400 transition-colors cursor-pointer block">
+        <h3 class="text-lg font-bold text-white line-clamp-2" :title="product.name">
+          {{ product.name }}
+        </h3>
+      </router-link>
     </template>
 
     <!-- 3. Slot de Subtitle com a correção de title para name -->
@@ -29,7 +32,7 @@
     <template #content>
       <div class="flex flex-col flex-1 h-full">
         <!-- 4. Descrição do produto em até 2 linhas -->
-        <p class="text-sm text-slate-500 line-clamp-2 mb-4 flex-1" :title="product.description">
+        <p class="text-sm text-slate-300 line-clamp-2 mb-4 flex-1" :title="product.description">
           {{ product.description }}
         </p>
 

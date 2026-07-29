@@ -14,6 +14,30 @@
           @add-to-cart="handleAddToCart"
         />
       </div>
+      <!-- CONTROLES DE PAGINAÇÃO AQUI -->
+        <div class="flex justify-center items-center gap-6 mt-10 mb-4">
+          <button
+            @click="prevPage"
+            :disabled="currentPage === 1"
+            class="px-5 py-2.5 rounded-lg font-bold transition-all duration-200"
+            :class="currentPage === 1 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md hover:shadow-lg hover:-translate-y-0.5'"
+          >
+            Anterior
+          </button>
+
+          <span class="text-slate-700 font-bold bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-100">
+            Página {{ currentPage }}
+          </span>
+
+          <button
+            @click="nextPage"
+            :disabled="!hasMore"
+            class="px-5 py-2.5 rounded-lg font-bold transition-all duration-200"
+            :class="!hasMore ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md hover:shadow-lg hover:-translate-y-0.5'"
+          >
+            Próxima
+          </button>
+        </div>
     </main>
 
     <!-- Resumo do Carrinho (Ocupa 1 coluna) -->
@@ -96,7 +120,11 @@ export default defineComponent({
     return {
       cartInstance: new Cart(),
       cartItems: [] as CartItem[],
-      products: [] as ProductAPI[]
+      products: [] as ProductAPI[],
+      // Novas variáveis de Paginação
+      currentPage: 1,
+      pageSize: 12, // Vamos exibir 6 produtos por vez (2 linhas de 3)
+      hasMore: true // Controla se o botão "Próxima" deve ficar ativo
     };
   },
   async mounted() {
@@ -108,6 +136,8 @@ export default defineComponent({
     } catch (error) {
       console.error("Erro ao buscar produtos da API:", error);
     }
+    // Agora chamamos o novo método centralizado
+    await this.fetchProducts();
   },
   computed: {
     totalItems(): number {
@@ -118,6 +148,42 @@ export default defineComponent({
     }
   },
   methods: {
+    // NOVO: Método que busca produtos passando os parâmetros de paginação
+    async fetchProducts() {
+      try {
+        const response = await axios.get('http://localhost:3000/products', {
+          params: {
+            page: this.currentPage,
+            size: this.pageSize
+          }
+        });
+        this.products = response.data;
+
+        // Se a API retornou menos produtos do que o tamanho da página,
+        // significa que chegamos na última página
+        this.hasMore = this.products.length === this.pageSize;
+      } catch (error) {
+        console.error("Erro ao buscar produtos da API:", error);
+      }
+    },
+
+    // NOVO: Navega para a próxima página
+    async nextPage() {
+      if (this.hasMore) {
+        this.currentPage++;
+        await this.fetchProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola a tela pro topo suavemente
+      }
+    },
+
+    // NOVO: Volta para a página anterior
+    async prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+        await this.fetchProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    },
     handleAddToCart(product: ProductAPI): void {
       this.cartInstance.addItem({
         id: product.id,
