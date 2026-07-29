@@ -1,11 +1,13 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { productsRouter } from './routers/products.router';
-import { ordersRouter } from './routers/orders.router';
-import { categoryRouter } from './routers/category.router';
+import cors from 'cors';
+import { productsRouter } from './routers/products.router.js';
+import { ordersRouter } from './routers/orders.router.js';
+import { categoryRouter } from './routers/category.router.js';
 
 const app = express();
 const PORT = 3000;
-
+// Habilitando o CORS para aceitar requisições do Vue
+app.use(cors());
 // Permite que o Express compreenda corpos JSON nas requisições
 app.use(express.json());
 

@@ -75,6 +75,19 @@
 import { defineComponent } from 'vue';
 import ProductCard from '../components/ProductCard.vue';
 import { Cart, type CartItem } from '../models/cart.model';
+import axios from 'axios';
+
+interface ProductAPI {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  category: {
+    id: string;
+    name: string;
+  }
+}
 
 export default defineComponent({
   name: 'HomeView',
@@ -83,12 +96,18 @@ export default defineComponent({
     return {
       cartInstance: new Cart(),
       cartItems: [] as CartItem[],
-      products: [
-        { id: '1', name: 'Teclado Mecânico RGB', price: 349.90, category: { id: 'c1', title: 'Periféricos' } },
-        { id: '2', name: 'Mouse Gamer 16000 DPI', price: 219.00, category: { id: 'c1', title: 'Periféricos' } },
-        { id: '3', name: 'Monitor 144Hz 1ms', price: 1299.00, category: { id: 'c2', title: 'Monitores' } }
-      ]
+      products: [] as ProductAPI[]
     };
+  },
+  async mounted() {
+    // Quando a tela carregar, busca os dados da nossa API Real!
+    try {
+      // Ajuste a rota '/products' conforme está configurado no seu router do backend
+      const response = await axios.get('http://localhost:3000/products');
+      this.products = response.data;
+    } catch (error) {
+      console.error("Erro ao buscar produtos da API:", error);
+    }
   },
   computed: {
     totalItems(): number {
@@ -99,12 +118,12 @@ export default defineComponent({
     }
   },
   methods: {
-    handleAddToCart(product: any): void {
+    handleAddToCart(product: ProductAPI): void {
       this.cartInstance.addItem({
         id: product.id,
         name: product.name,
         price: product.price,
-        category: { id: product.category.id, title: product.category.title }
+        category: { id: product.category.id, title: product.category.name }
       }, 1);
       this.cartItems = this.cartInstance.getItems();
     },

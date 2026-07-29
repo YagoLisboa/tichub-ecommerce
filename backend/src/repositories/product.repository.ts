@@ -3,10 +3,7 @@ import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import Database from 'better-sqlite3';
 import { Product } from '../entities/product.entity.js';
 
-// 1. Apontando para o arquivo EXATO na raiz
-//const sqlite = new Database('dev.db');
-
-// 2. Usando a diretiva Sênior para lidar com o conflito de tipos de terceiros
+// Usando a diretiva Sênior para lidar com o conflito de tipos de terceiros
 //// @ts-expect-error - Tipagem do PrismaAdapter conflita temporariamente com o better-sqlite3
 
 const adapter = new PrismaBetterSqlite3({
