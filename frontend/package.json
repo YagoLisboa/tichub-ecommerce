@@ -18,6 +18,9 @@
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@primevue/themes": "^4.5.4",
     "@vuelidate/core": "^2.0.3",

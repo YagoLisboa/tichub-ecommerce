@@ -1,32 +1,72 @@
-import { Product } from '../entities/product.entity';
+import { PrismaClient } from '@prisma/client';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import Database from 'better-sqlite3';
+import { Product } from '../entities/product.entity.js';
 
+// 1. Apontando para o arquivo EXATO na raiz
+//const sqlite = new Database('dev.db');
+
+// 2. Usando a diretiva Sênior para lidar com o conflito de tipos de terceiros
+//// @ts-expect-error - Tipagem do PrismaAdapter conflita temporariamente com o better-sqlite3
+
+const adapter = new PrismaBetterSqlite3({
+  url: 'file:./dev.db'
+});
+
+// 3. Inicialização
+const prisma = new PrismaClient({ adapter });
 export class ProductRepository {
-  private products: Product[] = [];
-
-  async createProduct(product: Product): Promise<Product> {
-    this.products.push(product);
-    return product;
+  
+  async createProduct(product: Product) {
+    return await prisma.product.create({
+      data: {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        stock: product.stock,
+        categoryId: product.categoryId,
+        description: product.description,
+        image: product.image
+      }
+    });
   }
 
-  async getAllProducts(page: number, size: number): Promise<Product[]> {
-    // Simulação de LIMIT e OFFSET
+  async getAllProducts(page: number, size: number) {
     const offset = (page - 1) * size;
-    return this.products.slice(offset, offset + size);
+    // Retorna os produtos com paginação via LIMIT (take) e OFFSET (skip)
+    return await prisma.product.findMany({
+      skip: offset,
+      take: size,
+      include: {
+        category: true // Faz o JOIN automático com a tabela de categorias
+      }
+    });
   }
 
-  async getProductById(id: string): Promise<Product | null> {
-    return this.products.find(c => c.id === id) || null;
+  async getProductById(id: string) {
+    return await prisma.product.findUnique({
+      where: { id },
+      include: { category: true }
+    });
   }
 
-  async updateProduct(product: Product): Promise<Product> {
-    const index = this.products.findIndex(c => c.id === product.id);
-    if (index !== -1) this.products[index] = product;
-    return product;
+  async updateProduct(product: Product) {
+    return await prisma.product.update({
+      where: { id: product.id },
+      data: {
+        name: product.name,
+        price: product.price,
+        stock: product.stock,
+        categoryId: product.categoryId,
+        description: product.description,
+        image: product.image
+      }
+    });
   }
 
-  async deleteProduct(id: string): Promise<boolean> {
-    const initialLength = this.products.length;
-    this.products = this.products.filter(c => c.id !== id);
-    return this.products.length !== initialLength;
+  async deleteProduct(id: string): Promise<void> {
+    await prisma.product.delete({
+      where: { id }
+    });
   }
 }
