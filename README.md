@@ -1,4 +1,4 @@
-# TechHub Commerce 🚀 e-commerce Fullstack Profissional
+# TechHub Commerce: 🚀E-commerce Fullstack Profissional
 
 <div align="center">
 
